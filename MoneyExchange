@@ -1,0 +1,102 @@
+
+const exchangeRates = {
+    USD: 1.0, EUR: 0.92, GBP: 0.79, JPY: 155.50, CAD: 1.36, 
+    AUD: 1.51, CNY: 7.24, INR: 83.50, CRC: 512.00, ISK: 138.50, 
+    VND: 25450.00, XPF: 110.15, MAD: 9.95, FJD: 2.24, EGP: 47.50, 
+    JMD: 156.20, PEN: 3.73, KES: 131.00, MVR: 15.45, TMT: 3.50, 
+    MXN: 17.80, BRL: 5.25, ZAR: 18.40, KRW: 1370.00, SGD: 1.35, 
+    NZD: 1.63, CHF: 0.90, SEK: 10.55, AED: 3.67, TRY: 32.20
+};
+
+const feeTypes = {
+    "No Fee": 0.0,
+    "Credit Card": 0.03,
+    "Bank Transfer": 0.05,
+    "Airport Kiosk": 0.12
+};
+
+// Helper function to match flexible fee inputs
+function standardizeFee(input) {
+    if (!input) return null;
+    const clean = input.trim().toLowerCase();
+    
+    if (clean === "no fee" || clean === "nf") return "No Fee";
+    if (clean === "credit card" || clean === "cc") return "Credit Card";
+    if (clean === "bank transfer" || clean === "bt") return "Bank Transfer";
+    if (clean === "airport kiosk" || clean === "ak") return "Airport Kiosk";
+    
+    return null;
+}
+
+function startCalculator() {
+    let amount = 0;
+    let fromCurrency = "";
+    let toCurrency = "";
+    let chosenFeeType = "";
+    let valuesExist = false;
+
+    while (true) {
+        if (!valuesExist) {
+            console.log(`========================================`);
+            console.log(`         ENTER INPUT INFORMATION        `);
+            console.log(`========================================`);
+            
+            amount = parseFloat(prompt("========================================\nAmount of Money == "));
+            fromCurrency = prompt("========================================\nStarting Currency (e.g., USD, EUR) == ").toUpperCase().trim();
+            toCurrency = prompt("========================================\nConvert Into (e.g., VND, JPY) == ").toUpperCase().trim();
+            
+            let feeInput = prompt("========================================\nFee Type (No Fee [nf], Credit Card [cc], Bank Transfer [bt], Airport Kiosk [ak]) == ");
+            chosenFeeType = standardizeFee(feeInput);
+            valuesExist = true;
+        } else {
+            console.log(`========================================`);
+            console.log(`               EDIT MENU                `);
+            console.log(`========================================`);
+            let editChoice = prompt("========================================\nType:\n'1' == Edit Amount\n'2' == Edit From Currency\n'3' == Edit To Currency\n'4' == Edit Fee\n'5' == Keep Everything");
+            
+            if (editChoice === "1") amount = parseFloat(prompt(`========================================\nNew Amount (Current: ${amount}) == `));
+            if (editChoice === "2") fromCurrency = prompt(`========================================\nNew Starting Currency (Current: ${fromCurrency}) == `).toUpperCase().trim();
+            if (editChoice === "3") toCurrency = prompt(`========================================\nNew Target Currency (Current: ${toCurrency}) == `).toUpperCase().trim();
+            if (editChoice === "4") {
+                let feeInput = prompt(`========================================\nNew Fee Type (Current: ${chosenFeeType}) == `);
+                chosenFeeType = standardizeFee(feeInput);
+            }
+        }
+
+        if (isNaN(amount) || !exchangeRates[fromCurrency] || !exchangeRates[toCurrency] || !chosenFeeType) {
+            console.log("========================================");
+            console.log("ERROR: One of your inputs was invalid or misspelled.");
+            console.log("========================================");
+            valuesExist = false; 
+        } else {
+            const rawBaseRate = (1 / exchangeRates[fromCurrency]) * exchangeRates[toCurrency];
+            const feeInFromCurrency = amount * feeTypes[chosenFeeType];
+            const finalConvertedAmount = (amount - feeInFromCurrency) * rawBaseRate;
+
+            console.log(`========================================`);
+            console.log(`            CONVERSION REPORT           `);
+            console.log(`========================================`);
+            console.log(`  1 ${fromCurrency} = ${rawBaseRate.toFixed(4)} ${toCurrency}`);
+            console.log("----------------------------------------");
+            console.log(`  Starting Cash  ==  ${amount} ${fromCurrency}`);
+            console.log(`  Fee Deducted   ==  ${feeInFromCurrency.toFixed(2)} ${fromCurrency} (${chosenFeeType})`);
+            console.log("----------------------------------------");
+            console.log(`  YOU ACTUALLY GET == ${finalConvertedAmount.toFixed(2)} ${toCurrency}`);
+            console.log(`========================================\n`);
+        }
+
+        let nextAction = prompt("========================================\nNext Action:\n'new' == Fresh Start\n'edit' == Tweak Values\n'exit' == Quit\n========================================\nType action here:\n");
+        if (nextAction) nextAction = nextAction.toLowerCase().trim();
+        
+        if (nextAction === "new") {
+            valuesExist = false;
+        } else if (nextAction === "edit") {
+            continue; 
+        } else {
+            console.log("Thank you for using the calculator!");
+            break;
+        }
+    }
+}
+
+startCalculator();
